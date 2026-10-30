@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<!-- pages-campaign site for Epsilon0xCell/Sandboxed-Brave-Browser; source of truth: Sandboxed-Brave-Browser-Website/ on the default branch -->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sandboxed-Brave-Browser - sandbox.sh manual</title>
+<style>
+  /* I kept this page in the manpage shape on purpose: one column, hard rules above and below each heading, and no decoration that is not a rule or a block of code. A launcher this small should be read the way its help would be read. */
+  * { box-sizing: border-box; }
+  body { margin: 0; background: #f7f5ef; color: #1a1a18; font-family: Georgia, "Times New Roman", serif; line-height: 1.55; }
+  .page { max-width: 760px; margin: 0 auto; padding: 28px 22px 48px; }
+  .toprule { border-top: 3px double #1a1a18; padding-top: 10px; display: flex; justify-content: space-between; gap: 16px; font-family: ui-monospace, Menlo, monospace; font-size: 12px; letter-spacing: .08em; text-transform: uppercase; }
+  h1 { font-size: 34px; line-height: 1.1; margin: 22px 0 6px; font-weight: 700; }
+  .oneline { font-size: 18px; margin: 0 0 18px; }
+  .hero { border: 1px solid #1a1a18; background: #fff; padding: 10px; }
+  .hero img { display: block; width: 100%; height: auto; }
+  .hero figcaption { font-family: ui-monospace, Menlo, monospace; font-size: 12px; margin-top: 8px; }
+  .badges { margin: 16px 0 4px; display: flex; flex-wrap: wrap; gap: 6px; }
+  .badges img { height: 20px; }
+  h2 { font-family: ui-monospace, Menlo, monospace; font-size: 14px; letter-spacing: .14em; text-transform: uppercase; border-top: 2px solid #1a1a18; border-bottom: 1px solid #1a1a18; padding: 7px 0; margin: 34px 0 14px; }
+  pre { background: #1a1a18; color: #f2efe4; padding: 14px 16px; overflow-x: auto; font-family: ui-monospace, Menlo, monospace; font-size: 14px; line-height: 1.5; }
+  pre .dim { color: #b9b4a3; }
+  dl { margin: 0; }
+  dt { font-family: ui-monospace, Menlo, monospace; font-weight: 700; margin-top: 14px; }
+  dd { margin: 2px 0 0 22px; }
+  .chips { display: flex; flex-wrap: wrap; gap: 8px; padding: 0; list-style: none; }
+  .chips li { border: 1px solid #1a1a18; padding: 3px 10px; font-family: ui-monospace, Menlo, monospace; font-size: 13px; background: #fff; }
+  .note { border-left: 4px solid #8a2f1d; background: #fff; padding: 10px 14px; }
+  a { color: #6d1f10; }
+  footer { margin-top: 44px; border-top: 3px double #1a1a18; padding-top: 10px; font-family: ui-monospace, Menlo, monospace; font-size: 12px; display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+  .logo-inline { width: 64px; height: 64px; float: right; margin: 4px 0 8px 16px; border: 1px solid #1a1a18; background: #fff; padding: 4px; }
+</style>
+</head>
+<body>
+<main class="page">
+  <div class="toprule"><span>sandbox.sh(1)</span><span>Shell script</span><span>sandbox.sh(1)</span></div>
+
+  <h1>Sandboxed-Brave-Browser</h1>
+  <p class="oneline">A custom sandboxed brave browser.</p>
+
+  <figure class="hero">
+    <img src="https://raw.githubusercontent.com/Epsilon0xCell/Sandboxed-Brave-Browser/main/banner.png" alt="Sandboxed-Brave-Browser banner">
+    <figcaption>Banner from this repo, banner.png on main. The logo.png from the same repo sits beside the description below.</figcaption>
+  </figure>
+
+  <div class="badges">
+    <img src="https://img.shields.io/github/stars/Epsilon0xCell/Sandboxed-Brave-Browser" alt="Stars">
+    <img src="https://img.shields.io/github/forks/Epsilon0xCell/Sandboxed-Brave-Browser" alt="Forks">
+    <img src="https://img.shields.io/github/last-commit/Epsilon0xCell/Sandboxed-Brave-Browser" alt="Last commit">
+    <img src="https://img.shields.io/github/languages/top/Epsilon0xCell/Sandboxed-Brave-Browser" alt="Top language">
+    <img src="https://img.shields.io/github/repo-size/Epsilon0xCell/Sandboxed-Brave-Browser" alt="Repo size">
+    <img src="https://img.shields.io/github/license/Epsilon0xCell/Sandboxed-Brave-Browser" alt="License">
+  </div>
+
+  <h2>Name</h2>
+  <p><strong>sandbox.sh</strong> - run Brave inside Firejail, and refuse to run it any other way.</p>
+
+  <h2>Synopsis</h2>
+  <!-- I put the synopsis before the story because that is where a manpage puts it, and because the one line below is the whole contract of this script. -->
+  <pre>./sandbox.sh [URL or Brave argument ...]
+
+<span class="dim"># the example from my README:</span>
+./sandbox.sh https://example.com</pre>
+
+  <h2>What this is</h2>
+  <img class="logo-inline" src="https://raw.githubusercontent.com/Epsilon0xCell/Sandboxed-Brave-Browser/main/logo.png" alt="Sandboxed-Brave-Browser logo">
+  <p>I wrote one shell file, <code>sandbox.sh</code>, and that file is the whole repo. It runs Brave inside Firejail. A plain Brave launch gives a page my real home directory. Firejail starts Brave with a private home view and the default browser profile restrictions, so the page gets the sandbox filesystem instead.</p>
+  <p>I do not trust a quiet fallback here. If the sandbox is missing, a bare launch would look exactly the same on screen and the protection would be gone. So the script checks first and stops first. That stop is the feature I care about most in this repo.</p>
+  <p>The file is 25 lines with its comments. I left it that short because there is nothing else it should do. It checks two names on PATH, passes my arguments through, and hands control to Firejail with <code>exec</code>.</p>
+
+  <h2>Behaviour, as written in sandbox.sh</h2>
+  <dl>
+    <dt>firejail missing</dt>
+    <dd>The script prints <code>error: firejail is not installed, so Brave would run unsandboxed. Install firejail first.</code> to stderr and exits 1. It does not launch Brave bare. I check firejail before brave on purpose, because a missing firejail is the failure that could tempt me to work around the sandbox.</dd>
+    <dt>brave missing</dt>
+    <dd>The script prints <code>error: brave is not installed (or not on PATH).</code> to stderr and exits 1.</dd>
+    <dt>Arguments</dt>
+    <dd>Caller arguments are forwarded as <code>"$@"</code> to Brave inside the sandbox, so a URL or flag passed to the script opens in the sandboxed browser directly. The quotes keep an argument with spaces in it as one argument.</dd>
+    <dt>exec</dt>
+    <dd>The shell is replaced by Firejail instead of sitting between Firejail and the terminal. Signals such as Ctrl-C and the final exit code then belong to the browser run itself.</dd>
+    <dt>set -u</dt>
+    <dd>I set <code>-u</code> so a future edit that reads a variable nobody set fails loudly here, instead of expanding to an empty string and quietly changing what gets launched.</dd>
+  </dl>
+
+  <h2>Requirements</h2>
+  <p>Both <code>firejail</code> and <code>brave</code> must be on PATH. The check uses <code>command -v</code>, which searches PATH the same way the shell will when it launches those names, so the check matches the launch.</p>
+  <ul class="chips"><li>Shell</li><li>Bash</li><li>Firejail</li><li>Brave</li></ul>
+
+  <h2>Honest note on checking this page</h2>
+  <!-- I did not run the launch path while building this site, and I say so here instead of letting a tidy page imply a live browser test that never happened. -->
+  <p class="note">I did not execute the launch path for this site. Starting Brave was not part of checking a documentation page. I read <code>sandbox.sh</code> in full, ran <code>bash -n</code> on it, and used a byte compile check with output to /tmp where the campaign smoke tool applies. The behaviour above is stated from the source and from the Deep Wave 1 record, where the script was run with stub firejail and stub brave: the stub received <code>brave https://example.com</code>, the missing firejail case exited 1 with the unsandboxed warning, and the missing brave case exited 1 with its own message.</p>
+
+  <h2>Files</h2>
+  <p><code>sandbox.sh</code> is the program. <code>README.md</code> states the requirements and the argument behaviour. <code>LICENSE</code> is MIT. The banner and logo are the repo art referenced at the top of this page.</p>
+  <p><a href="https://github.com/Epsilon0xCell/Sandboxed-Brave-Browser">Read the code in Sandboxed-Brave-Browser</a> &middot; <a href="https://github.com/Epsilon0xCell">Epsilon0xCell on GitHub</a></p>
+
+  <footer><span>Built by Epsilon0xCell</span><span>sandbox.sh(1) - read the source before you trust the sandbox</span></footer>
+</main>
+</body>
+</html>
