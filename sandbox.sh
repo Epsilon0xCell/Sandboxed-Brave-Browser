@@ -1,15 +1,26 @@
 #!/bin/bash
-# Run Brave inside a Firejail sandbox.
+# I run Brave inside a Firejail sandbox, and I wrote this script because
+# a plain brave launch gives a compromised page my real home directory.
+# Firejail starts Brave with a private home view and the default browser
+# profile restrictions, so the page gets the sandbox filesystem instead.
+# That protection only exists on this launch path. If I started Brave any
+# other way from here, nothing in the output would warn me it was gone.
 #
-# Firejail is the whole point of this script: it starts Brave with a
-# private home view and the default browser profile restrictions, so a
-# compromised page gets the sandbox's filesystem, not yours. That only
-# holds while Brave is launched through Firejail, which is why this
-# script checks for both binaries first: falling back to a bare `brave`
-# when Firejail is missing would silently drop the protection the script
-# exists to provide.
+# I check firejail before I check brave, on purpose. A missing brave is
+# just a missing program. A missing firejail is the failure that matters,
+# because it is the one I could be tempted to work around by launching
+# Brave bare. I do not do that. I stop and say what is missing.
+#
+# I set -u so a future edit that reads a variable nobody set fails loudly
+# here, instead of expanding to an empty string and quietly changing what
+# gets launched.
 set -u
 
+# I test with command -v because it searches PATH the same way this shell
+# will when it launches the names below, so my check matches the launch.
+# I hide its output because the path it prints adds nothing next to my own
+# error, and I send that error to stderr so it never mixes into output a
+# caller captured from stdout.
 if ! command -v firejail >/dev/null 2>&1; then
     echo "error: firejail is not installed, so Brave would run unsandboxed. Install firejail first." >&2
     exit 1
@@ -19,7 +30,11 @@ if ! command -v brave >/dev/null 2>&1; then
     exit 1
 fi
 
-# "$@" forwards any flags the caller passed (for example a URL to open)
-# to Brave, inside the sandbox. exec replaces this shell with Firejail so
-# signals and the exit code are Brave's own.
+# I hand "$@" to Brave inside the sandbox, so a URL or flag I pass here
+# opens in the sandboxed browser directly. The quotes matter: an argument
+# with spaces in it stays one argument. I use exec so this shell gets
+# replaced by firejail instead of sitting between firejail and the
+# terminal. Signals such as Ctrl-C and the final exit code then belong to
+# the browser run itself, and no wrapper shell stays alive after Brave
+# closes.
 exec firejail brave "$@"
