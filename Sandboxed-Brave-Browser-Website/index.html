@@ -4,98 +4,252 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Sandboxed-Brave-Browser - sandbox.sh manual</title>
+<title>Sandboxed Brave Browser: The Airlock</title>
 <style>
-  /* I kept this page in the manpage shape on purpose: one column, hard rules above and below each heading, and no decoration that is not a rule or a block of code. A launcher this small should be read the way its help would be read. */
+  /* I built this page as a passage, not a dashboard. You start outside on the host, you walk down past each gate in the order sandbox.sh runs them, and you end inside with the browser. The rail on the left is the wall of that passage. */
   * { box-sizing: border-box; }
-  body { margin: 0; background: #f7f5ef; color: #1a1a18; font-family: Georgia, "Times New Roman", serif; line-height: 1.55; }
-  .page { max-width: 760px; margin: 0 auto; padding: 28px 22px 48px; }
-  .toprule { border-top: 3px double #1a1a18; padding-top: 10px; display: flex; justify-content: space-between; gap: 16px; font-family: ui-monospace, Menlo, monospace; font-size: 12px; letter-spacing: .08em; text-transform: uppercase; }
-  h1 { font-size: 34px; line-height: 1.1; margin: 22px 0 6px; font-weight: 700; }
-  .oneline { font-size: 18px; margin: 0 0 18px; }
-  .hero { border: 1px solid #1a1a18; background: #fff; padding: 10px; }
-  .hero img { display: block; width: 100%; height: auto; }
-  .hero figcaption { font-family: ui-monospace, Menlo, monospace; font-size: 12px; margin-top: 8px; }
-  .badges { margin: 16px 0 4px; display: flex; flex-wrap: wrap; gap: 6px; }
-  .badges img { height: 20px; }
-  h2 { font-family: ui-monospace, Menlo, monospace; font-size: 14px; letter-spacing: .14em; text-transform: uppercase; border-top: 2px solid #1a1a18; border-bottom: 1px solid #1a1a18; padding: 7px 0; margin: 34px 0 14px; }
-  pre { background: #1a1a18; color: #f2efe4; padding: 14px 16px; overflow-x: auto; font-family: ui-monospace, Menlo, monospace; font-size: 14px; line-height: 1.5; }
-  pre .dim { color: #b9b4a3; }
-  dl { margin: 0; }
-  dt { font-family: ui-monospace, Menlo, monospace; font-weight: 700; margin-top: 14px; }
-  dd { margin: 2px 0 0 22px; }
-  .chips { display: flex; flex-wrap: wrap; gap: 8px; padding: 0; list-style: none; }
-  .chips li { border: 1px solid #1a1a18; padding: 3px 10px; font-family: ui-monospace, Menlo, monospace; font-size: 13px; background: #fff; }
-  .note { border-left: 4px solid #8a2f1d; background: #fff; padding: 10px 14px; }
-  a { color: #6d1f10; }
-  footer { margin-top: 44px; border-top: 3px double #1a1a18; padding-top: 10px; font-family: ui-monospace, Menlo, monospace; font-size: 12px; display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
-  .logo-inline { width: 64px; height: 64px; float: right; margin: 4px 0 8px 16px; border: 1px solid #1a1a18; background: #fff; padding: 4px; }
+  :root { --steel:#23282c; --steel2:#2e3439; --wall:#e9e6de; --paper:#f6f4ee; --ink:#1c1f22; --amber:#c47b12; --amber-lit:#f2a71b; --line:#b9b2a2; --code-bg:#191d20; --code-fg:#ece7d8; --code-dim:#9aa39d; }
+  body { margin:0; background:var(--wall); color:var(--ink); font-family:"Avenir Next", "Segoe UI", Helvetica, Arial, sans-serif; line-height:1.6; }
+  a { color:#7a4d05; }
+  .outside { background:var(--steel); color:#f0ede4; padding:34px 22px 30px; }
+  .outside-inner { max-width:1060px; margin:0 auto; }
+  .door-label { font-family:ui-monospace, SFMono-Regular, Menlo, monospace; font-size:12px; letter-spacing:.18em; text-transform:uppercase; color:#d8b36a; margin:0 0 14px; }
+  .head-row { display:flex; gap:22px; align-items:flex-start; flex-wrap:wrap; }
+  .head-row img.logo { width:92px; height:92px; background:#fff; padding:6px; border:3px solid #d8b36a; }
+  h1 { font-size:40px; line-height:1.05; margin:0 0 10px; font-weight:800; letter-spacing:-.01em; }
+  .oneline { font-size:19px; margin:0; max-width:640px; }
+  .banner { margin:26px 0 0; border:1px solid #4a5157; background:#171a1c; padding:10px; }
+  .banner img { display:block; width:100%; height:auto; }
+  .banner figcaption, .plate figcaption { font-family:ui-monospace, Menlo, monospace; font-size:12px; margin-top:8px; }
+  .outside .banner figcaption { color:#c9c4b4; }
+  .badges { display:flex; flex-wrap:wrap; gap:6px; margin:18px 0 0; }
+  .badges img { height:20px; }
+  .wrap { max-width:1060px; margin:0 auto; padding:30px 22px 10px; }
+  .intro { max-width:720px; }
+  .intro p { font-size:17px; }
+  h2 { font-size:26px; margin:0 0 10px; line-height:1.2; }
+  h3 { font-size:19px; margin:0 0 8px; }
+  /* I keep the passage as two columns on wide screens: the rail stays in view while the panels move past it, the way a gate light stays in view while you walk. On a phone the rail goes on top and stays short. */
+  .passage { display:grid; grid-template-columns:210px 1fr; gap:30px; align-items:start; margin-top:34px; }
+  .rail { position:sticky; top:18px; background:var(--steel); color:#e8e4d6; padding:18px 16px 20px 20px; }
+  .rail h2 { font-family:ui-monospace, Menlo, monospace; font-size:12px; letter-spacing:.16em; text-transform:uppercase; color:#d8b36a; margin:0 0 16px; }
+  .track { position:relative; margin-left:7px; padding-left:22px; border-left:2px solid #4a5157; }
+  .fill { position:absolute; left:-2px; top:0; width:2px; height:0; background:var(--amber-lit); }
+  .gate { position:relative; padding:0 0 18px; opacity:.45; transition:opacity .35s ease, transform .35s ease; transform:translateX(-3px); }
+  .gate:last-child { padding-bottom:2px; }
+  .gate::before { content:""; position:absolute; left:-29px; top:5px; width:12px; height:12px; border-radius:50%; background:#4a5157; border:2px solid var(--steel); }
+  .gate.lit { opacity:1; transform:translateX(0); }
+  .gate.lit::before { background:var(--amber-lit); }
+  .gate .g-num { font-family:ui-monospace, Menlo, monospace; font-size:11px; letter-spacing:.14em; color:#d8b36a; display:block; }
+  .gate .g-name { font-weight:700; font-size:15px; line-height:1.35; display:block; }
+  .gate .g-line { font-family:ui-monospace, Menlo, monospace; font-size:11px; color:#b9bdb9; display:block; }
+  .panels { display:grid; gap:26px; }
+  .panel { background:var(--paper); border:1px solid var(--line); border-left:8px solid #8f887a; padding:22px 24px 20px; transition:border-color .35s ease; }
+  .panel.lit { border-left-color:var(--amber-lit); }
+  .panel .stage { font-family:ui-monospace, Menlo, monospace; font-size:12px; letter-spacing:.16em; text-transform:uppercase; color:#7a4d05; margin:0 0 6px; }
+  .panel p { margin:0 0 12px; }
+  pre { background:var(--code-bg); color:var(--code-fg); padding:14px 16px; overflow-x:auto; font-family:ui-monospace, SFMono-Regular, Menlo, monospace; font-size:13.5px; line-height:1.55; margin:0 0 12px; }
+  pre .ln { color:var(--code-dim); user-select:none; }
+  .assumes { border-top:1px dashed var(--line); padding-top:10px; font-size:15px; }
+  .assumes strong { font-family:ui-monospace, Menlo, monospace; font-size:12px; letter-spacing:.12em; text-transform:uppercase; }
+  .honest { background:#fdf3e0; border-color:#d8b36a; }
+  .plates { margin-top:44px; }
+  .plates-grid { display:grid; grid-template-columns:1fr 1fr; gap:22px; margin-top:16px; }
+  .plate { background:var(--paper); border:1px solid var(--line); padding:10px; margin:0; }
+  .plate img { display:block; width:100%; height:auto; }
+  .plate figcaption { color:#4c463a; }
+  .req { margin-top:40px; background:var(--steel2); color:#f0ede4; padding:22px 24px; }
+  .req h2 { color:#fff; }
+  .req ul { margin:0; padding-left:20px; }
+  .req code, .panel code, .intro code { font-family:ui-monospace, Menlo, monospace; font-size:.92em; }
+  .panel code, .intro code { background:#e7e1d2; padding:1px 5px; }
+  .req code { background:#1c2023; padding:1px 5px; color:#f2d492; }
+  footer { max-width:1060px; margin:0 auto; padding:26px 22px 40px; display:flex; justify-content:space-between; gap:14px; flex-wrap:wrap; font-family:ui-monospace, Menlo, monospace; font-size:12px; border-top:2px solid var(--steel); margin-top:44px; }
+  @media (max-width:760px) { .passage { grid-template-columns:1fr; } .rail { position:static; } .plates-grid { grid-template-columns:1fr; } h1 { font-size:32px; } }
+  /* I still every gate light here. If your system asks for less motion, you get the whole passage lit at once and nothing fills or slides while you read. */
+  @media (prefers-reduced-motion: reduce) { .gate, .panel { transition:none; transform:none; } .gate { opacity:1; } .gate::before { background:var(--amber-lit); } .panel { border-left-color:var(--amber-lit); } .fill { display:none; } }
 </style>
 </head>
 <body>
-<main class="page">
-  <div class="toprule"><span>sandbox.sh(1)</span><span>Shell script</span><span>sandbox.sh(1)</span></div>
+<header class="outside">
+  <div class="outside-inner">
+    <p class="door-label">Outside the first door: your host machine</p>
+    <div class="head-row">
+      <img class="logo" src="https://raw.githubusercontent.com/Epsilon0xCell/Sandboxed-Brave-Browser/main/logo.png" alt="Sandboxed-Brave-Browser logo">
+      <div>
+        <h1>Sandboxed-Brave-Browser</h1>
+        <p class="oneline">One shell script, <strong>sandbox.sh</strong>. It runs Brave inside Firejail, and it refuses to run Brave any other way.</p>
+      </div>
+    </div>
+    <figure class="banner">
+      <img src="https://raw.githubusercontent.com/Epsilon0xCell/Sandboxed-Brave-Browser/main/banner.png" alt="Sandboxed-Brave-Browser banner">
+      <figcaption>banner.png from this repo, on main. The logo above is logo.png from the same repo.</figcaption>
+    </figure>
+    <div class="badges">
+      <img src="https://img.shields.io/github/stars/Epsilon0xCell/Sandboxed-Brave-Browser" alt="Stars">
+      <img src="https://img.shields.io/github/forks/Epsilon0xCell/Sandboxed-Brave-Browser" alt="Forks">
+      <img src="https://img.shields.io/github/last-commit/Epsilon0xCell/Sandboxed-Brave-Browser" alt="Last commit">
+      <img src="https://img.shields.io/github/languages/top/Epsilon0xCell/Sandboxed-Brave-Browser" alt="Top language">
+      <img src="https://img.shields.io/github/repo-size/Epsilon0xCell/Sandboxed-Brave-Browser" alt="Repo size">
+      <img src="https://img.shields.io/github/license/Epsilon0xCell/Sandboxed-Brave-Browser" alt="License, MIT">
+    </div>
+  </div>
+</header>
 
-  <h1>Sandboxed-Brave-Browser</h1>
-  <p class="oneline">A custom sandboxed brave browser.</p>
+<div class="wrap">
+  <section class="intro">
+    <h2>Why I put a door in front of Brave</h2>
+    <p>I wrote <code>sandbox.sh</code> because a plain Brave launch gives a compromised page my real home directory. The header comment in the script says what I wanted from Firejail, in my own words at the top of the file:</p>
+    <pre><span class="ln"> 1 </span>#!/bin/bash
+<span class="ln"> 2 </span># I run Brave inside a Firejail sandbox, and I wrote this script because
+<span class="ln"> 3 </span># a plain brave launch gives a compromised page my real home directory.
+<span class="ln"> 4 </span># Firejail starts Brave with a private home view and the default browser
+<span class="ln"> 5 </span># profile restrictions, so the page gets the sandbox filesystem instead.
+<span class="ln"> 6 </span># That protection only exists on this launch path. If I started Brave any
+<span class="ln"> 7 </span># other way from here, nothing in the output would warn me it was gone.</pre>
+    <p>That is the whole idea. Outside the door is my host and my real files. Inside is Brave as Firejail starts it. The script is the passage between them, and this page follows it in the order the script runs: strict variables first, the Firejail check second, the Brave check third, and the launch last.</p>
+    <p>The file is 40 lines and 1,984 bytes at the head I read for this page, commit 508f2226f37458c6ea72a6ed255f62abf689809a. The panels below show every line that does work: lines 17, 24 to 31, and 40, plus the comments that explain them. The only comments I left out are the ones on lines 8 to 13 and 19 to 23, and the panels and the text under them cover what those comments say.</p>
+    <p>Read the code yourself: <a href="https://github.com/Epsilon0xCell/Sandboxed-Brave-Browser">Epsilon0xCell/Sandboxed-Brave-Browser on GitHub</a>, and <a href="https://github.com/Epsilon0xCell">my profile</a>.</p>
+  </section>
 
-  <figure class="hero">
-    <img src="https://raw.githubusercontent.com/Epsilon0xCell/Sandboxed-Brave-Browser/main/banner.png" alt="Sandboxed-Brave-Browser banner">
-    <figcaption>Banner from this repo, banner.png on main. The logo.png from the same repo sits beside the description below.</figcaption>
-  </figure>
+  <div class="passage">
+    <aside class="rail" aria-label="Stages of sandbox.sh in run order">
+      <h2>The passage, in order</h2>
+      <div class="track">
+        <div class="fill" id="railfill"></div>
+        <div class="gate lit" data-gate="g1"><span class="g-num">Gate 1</span><span class="g-name">Strict variables</span><span class="g-line">line 17</span></div>
+        <div class="gate lit" data-gate="g2"><span class="g-num">Gate 2</span><span class="g-name">Is Firejail here?</span><span class="g-line">lines 24 to 27</span></div>
+        <div class="gate lit" data-gate="g3"><span class="g-num">Gate 3</span><span class="g-name">Is Brave here?</span><span class="g-line">lines 28 to 31</span></div>
+        <div class="gate lit" data-gate="g4"><span class="g-num">Gate 4</span><span class="g-name">The launch</span><span class="g-line">line 40</span></div>
+        <div class="gate lit" data-gate="g5"><span class="g-num">Last panel</span><span class="g-name">What this is not</span><span class="g-line">read from the code</span></div>
+      </div>
+    </aside>
 
-  <div class="badges">
-    <img src="https://img.shields.io/github/stars/Epsilon0xCell/Sandboxed-Brave-Browser" alt="Stars">
-    <img src="https://img.shields.io/github/forks/Epsilon0xCell/Sandboxed-Brave-Browser" alt="Forks">
-    <img src="https://img.shields.io/github/last-commit/Epsilon0xCell/Sandboxed-Brave-Browser" alt="Last commit">
-    <img src="https://img.shields.io/github/languages/top/Epsilon0xCell/Sandboxed-Brave-Browser" alt="Top language">
-    <img src="https://img.shields.io/github/repo-size/Epsilon0xCell/Sandboxed-Brave-Browser" alt="Repo size">
-    <img src="https://img.shields.io/github/license/Epsilon0xCell/Sandboxed-Brave-Browser" alt="License">
+    <div class="panels">
+      <section class="panel lit" id="g1">
+        <p class="stage">Gate 1, line 17</p>
+        <h3>Strict variables, before anything launches</h3>
+        <p>The first real line is <code>set -u</code>. If a later edit reads a variable nobody set, the script fails there instead of expanding it to an empty string and quietly changing what gets launched. I want a loud failure in a launcher, not a changed command.</p>
+        <pre><span class="ln">14 </span># I set -u so a future edit that reads a variable nobody set fails loudly
+<span class="ln">15 </span># here, instead of expanding to an empty string and quietly changing what
+<span class="ln">16 </span># gets launched.
+<span class="ln">17 </span>set -u</pre>
+        <p class="assumes"><strong>Assumes</strong> Bash. Line 1 is <code>#!/bin/bash</code>, and nothing after it tests which shell or which system it is running on.</p>
+      </section>
+
+      <section class="panel lit" id="g2">
+        <p class="stage">Gate 2, lines 24 to 27</p>
+        <h3>Firejail first, and no bare launch if it is missing</h3>
+        <p>This is the check I care about most, and it runs before the Brave check. If <code>firejail</code> is not on PATH, the script prints its error to stderr and exits with code 1. It does not fall back to starting Brave on its own. A missing Brave is just a missing program. A missing Firejail is the failure that could tempt me to work around the sandbox, so that is the one that stops the passage.</p>
+        <pre><span class="ln">24 </span>if ! command -v firejail &gt;/dev/null 2&gt;&amp;1; then
+<span class="ln">25 </span>    echo "error: firejail is not installed, so Brave would run unsandboxed. Install firejail first." &gt;&amp;2
+<span class="ln">26 </span>    exit 1
+<span class="ln">27 </span>fi</pre>
+        <p class="assumes"><strong>Assumes</strong> A program named exactly <code>firejail</code> findable on PATH. The test is <code>command -v</code>, which searches PATH the same way this shell will at launch. It checks that the name exists. It does not check a version.</p>
+      </section>
+
+      <section class="panel lit" id="g3">
+        <p class="stage">Gate 3, lines 28 to 31</p>
+        <h3>Brave second, same shape</h3>
+        <p>The second check repeats the first, for the browser itself. If <code>brave</code> is not on PATH, the script prints a shorter error to stderr and exits with code 1. Nothing has launched yet at this point, so a stop here costs nothing.</p>
+        <pre><span class="ln">28 </span>if ! command -v brave &gt;/dev/null 2&gt;&amp;1; then
+<span class="ln">29 </span>    echo "error: brave is not installed (or not on PATH)." &gt;&amp;2
+<span class="ln">30 </span>    exit 1
+<span class="ln">31 </span>fi</pre>
+        <p class="assumes"><strong>Assumes</strong> A program named exactly <code>brave</code> on PATH. If your Brave binary has a different name on your system, this script will not find it. I did not add a setting for that.</p>
+      </section>
+
+      <section class="panel lit" id="g4">
+        <p class="stage">Gate 4, lines 33 to 40</p>
+        <h3>One line does the launch</h3>
+        <p>Everything before this was a check. This is the payoff: <code>exec firejail brave "$@"</code>. The <code>exec</code> replaces this shell with Firejail, so no wrapper shell stays alive after Brave closes, and Ctrl-C and the final exit code belong to the browser run itself. The quoted <code>"$@"</code> hands my arguments to Brave inside the sandbox, so <code>./sandbox.sh https://example.com</code> opens that page in the sandboxed browser, and an argument with spaces in it stays one argument.</p>
+        <pre><span class="ln">33 </span># I hand "$@" to Brave inside the sandbox, so a URL or flag I pass here
+<span class="ln">34 </span># opens in the sandboxed browser directly. The quotes matter: an argument
+<span class="ln">35 </span># with spaces in it stays one argument. I use exec so this shell gets
+<span class="ln">36 </span># replaced by firejail instead of sitting between firejail and the
+<span class="ln">37 </span># terminal. Signals such as Ctrl-C and the final exit code then belong to
+<span class="ln">38 </span># the browser run itself, and no wrapper shell stays alive after Brave
+<span class="ln">39 </span># closes.
+<span class="ln">40 </span>exec firejail brave "$@"</pre>
+        <p class="assumes"><strong>Assumes</strong> That Firejail, called with no options of its own here, sets up the sandbox. I pass no Firejail flag, no profile name, and no directory in this line. Whatever Firejail does by default for a program named brave is what this launch gets.</p>
+      </section>
+
+      <section class="panel honest lit" id="g5">
+        <p class="stage">Last panel, the honest one</p>
+        <h3>What this sandbox does not do</h3>
+        <p>I read this straight off the code, and I would rather say it plainly than let the word sandbox promise more than 40 lines can deliver.</p>
+        <p>It is not a virtual machine. It is not a container I defined. The script builds no profile folder, copies no files, and sets no Brave flags of its own. Its one launch line hands Brave to Firejail with no Firejail options, so the separation you get is Firejail default behaviour, as the header comment describes it: a private home view and the default browser profile restrictions. If you need stronger isolation than that, this script is not it.</p>
+        <p>It protects only this launch path. Start Brave any other way and none of this applies, and nothing warns you. It also checks only that the two names exist on PATH. It does not test that Firejail works, check any version, or confirm after launch that Brave ended up sandboxed.</p>
+        <p>And how I checked this page: I read <code>sandbox.sh</code> in full for this page and I did not re-run it. Running it would launch a browser, which was not part of checking a page. The only check I ran on the script itself was <code>bash -n sandbox.sh</code>, a syntax check that reads the file and starts nothing, and it passed.</p>
+      </section>
+    </div>
   </div>
 
-  <h2>Name</h2>
-  <p><strong>sandbox.sh</strong> - run Brave inside Firejail, and refuse to run it any other way.</p>
+  <section class="req">
+    <h2>What it needs, exactly as the code assumes it</h2>
+    <ul>
+      <li>Bash, from the shebang on line 1: <code>#!/bin/bash</code></li>
+      <li>A program named <code>firejail</code> on PATH, checked on line 24</li>
+      <li>A program named <code>brave</code> on PATH, checked on line 28</li>
+      <li>A system where Firejail runs. The script names no operating system and tests for none, so I list none here as promised support.</li>
+    </ul>
+    <p>Use, from my README: <code>./sandbox.sh https://example.com</code>. Any argument you pass goes through to Brave.</p>
+  </section>
 
-  <h2>Synopsis</h2>
-  <!-- I put the synopsis before the story because that is where a manpage puts it, and because the one line below is the whole contract of this script. -->
-  <pre>./sandbox.sh [URL or Brave argument ...]
+  <section class="plates">
+    <h2>Inspection plates</h2>
+    <p>These six sheets are the hand-drawn visuals from this repo, in Sandboxed-Brave-Browser-Visuals/ on main. I put them after the passage on purpose: read the 40 lines first, then look at the drawings of them.</p>
+    <div class="plates-grid">
+      <figure class="plate"><img src="https://raw.githubusercontent.com/Epsilon0xCell/Sandboxed-Brave-Browser/main/Sandboxed-Brave-Browser-Visuals/architecture.png" alt="Architecture sheet for Sandboxed-Brave-Browser"><figcaption>architecture.png: the parts of this repo and how the launcher, Firejail, and Brave sit together.</figcaption></figure>
+      <figure class="plate"><img src="https://raw.githubusercontent.com/Epsilon0xCell/Sandboxed-Brave-Browser/main/Sandboxed-Brave-Browser-Visuals/data-flow.png" alt="Data flow sheet for Sandboxed-Brave-Browser"><figcaption>data-flow.png: how an argument and the launch move from the shell through Firejail to Brave.</figcaption></figure>
+      <figure class="plate"><img src="https://raw.githubusercontent.com/Epsilon0xCell/Sandboxed-Brave-Browser/main/Sandboxed-Brave-Browser-Visuals/flowchart.png" alt="Flowchart sheet for Sandboxed-Brave-Browser"><figcaption>flowchart.png: the check, check, launch order of sandbox.sh as a flow.</figcaption></figure>
+      <figure class="plate"><img src="https://raw.githubusercontent.com/Epsilon0xCell/Sandboxed-Brave-Browser/main/Sandboxed-Brave-Browser-Visuals/product-map.png" alt="Product map sheet for Sandboxed-Brave-Browser"><figcaption>product-map.png: where this one script sits as a product, with its checks and its launch.</figcaption></figure>
+      <figure class="plate"><img src="https://raw.githubusercontent.com/Epsilon0xCell/Sandboxed-Brave-Browser/main/Sandboxed-Brave-Browser-Visuals/schematic.png" alt="Schematic sheet for Sandboxed-Brave-Browser"><figcaption>schematic.png: a schematic drawing of the sandboxed launch.</figcaption></figure>
+      <figure class="plate"><img src="https://raw.githubusercontent.com/Epsilon0xCell/Sandboxed-Brave-Browser/main/Sandboxed-Brave-Browser-Visuals/statistics.png" alt="Statistics sheet for Sandboxed-Brave-Browser"><figcaption>statistics.png: the repo counted up, a script this small has very little to count.</figcaption></figure>
+    </div>
+  </section>
+</div>
 
-<span class="dim"># the example from my README:</span>
-./sandbox.sh https://example.com</pre>
+<footer>
+  <span>Built by Epsilon0xCell</span>
+  <span><a href="https://github.com/Epsilon0xCell/Sandboxed-Brave-Browser">Repo</a> and <a href="https://github.com/Epsilon0xCell">github.com/Epsilon0xCell</a></span>
+  <span>LICENSE is MIT. sandbox.sh is 40 lines. Read it before you trust it.</span>
+</footer>
 
-  <h2>What this is</h2>
-  <img class="logo-inline" src="https://raw.githubusercontent.com/Epsilon0xCell/Sandboxed-Brave-Browser/main/logo.png" alt="Sandboxed-Brave-Browser logo">
-  <p>I wrote one shell file, <code>sandbox.sh</code>, and that file is the whole repo. It runs Brave inside Firejail. A plain Brave launch gives a page my real home directory. Firejail starts Brave with a private home view and the default browser profile restrictions, so the page gets the sandbox filesystem instead.</p>
-  <p>I do not trust a quiet fallback here. If the sandbox is missing, a bare launch would look exactly the same on screen and the protection would be gone. So the script checks first and stops first. That stop is the feature I care about most in this repo.</p>
-  <p>The file is 25 lines with its comments. I left it that short because there is nothing else it should do. It checks two names on PATH, passes my arguments through, and hands control to Firejail with <code>exec</code>.</p>
-
-  <h2>Behaviour, as written in sandbox.sh</h2>
-  <dl>
-    <dt>firejail missing</dt>
-    <dd>The script prints <code>error: firejail is not installed, so Brave would run unsandboxed. Install firejail first.</code> to stderr and exits 1. It does not launch Brave bare. I check firejail before brave on purpose, because a missing firejail is the failure that could tempt me to work around the sandbox.</dd>
-    <dt>brave missing</dt>
-    <dd>The script prints <code>error: brave is not installed (or not on PATH).</code> to stderr and exits 1.</dd>
-    <dt>Arguments</dt>
-    <dd>Caller arguments are forwarded as <code>"$@"</code> to Brave inside the sandbox, so a URL or flag passed to the script opens in the sandboxed browser directly. The quotes keep an argument with spaces in it as one argument.</dd>
-    <dt>exec</dt>
-    <dd>The shell is replaced by Firejail instead of sitting between Firejail and the terminal. Signals such as Ctrl-C and the final exit code then belong to the browser run itself.</dd>
-    <dt>set -u</dt>
-    <dd>I set <code>-u</code> so a future edit that reads a variable nobody set fails loudly here, instead of expanding to an empty string and quietly changing what gets launched.</dd>
-  </dl>
-
-  <h2>Requirements</h2>
-  <p>Both <code>firejail</code> and <code>brave</code> must be on PATH. The check uses <code>command -v</code>, which searches PATH the same way the shell will when it launches those names, so the check matches the launch.</p>
-  <ul class="chips"><li>Shell</li><li>Bash</li><li>Firejail</li><li>Brave</li></ul>
-
-  <h2>Honest note on checking this page</h2>
-  <!-- I did not run the launch path while building this site, and I say so here instead of letting a tidy page imply a live browser test that never happened. -->
-  <p class="note">I did not execute the launch path for this site. Starting Brave was not part of checking a documentation page. I read <code>sandbox.sh</code> in full, ran <code>bash -n</code> on it, and used a byte compile check with output to /tmp where the campaign smoke tool applies. The behaviour above is stated from the source and from the Deep Wave 1 record, where the script was run with stub firejail and stub brave: the stub received <code>brave https://example.com</code>, the missing firejail case exited 1 with the unsandboxed warning, and the missing brave case exited 1 with its own message.</p>
-
-  <h2>Files</h2>
-  <p><code>sandbox.sh</code> is the program. <code>README.md</code> states the requirements and the argument behaviour. <code>LICENSE</code> is MIT. The banner and logo are the repo art referenced at the top of this page.</p>
-  <p><a href="https://github.com/Epsilon0xCell/Sandboxed-Brave-Browser">Read the code in Sandboxed-Brave-Browser</a> &middot; <a href="https://github.com/Epsilon0xCell">Epsilon0xCell on GitHub</a></p>
-
-  <footer><span>Built by Epsilon0xCell</span><span>sandbox.sh(1) - read the source before you trust the sandbox</span></footer>
-</main>
+<script>
+  // I only dim the gates when script is running. Without it, every gate above ships lit in the markup, so the passage reads fine with JavaScript off.
+  document.documentElement.classList.add("js-on");
+  // I check the reduced motion setting once, here. If it is set, I light everything at once and never touch the progress line.
+  var reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  var gates = document.querySelectorAll(".gate");
+  var panels = document.querySelectorAll(".panel");
+  var fill = document.getElementById("railfill");
+  if (reduceMotion) {
+    gates.forEach(function (g) { g.classList.add("lit"); });
+    panels.forEach(function (p) { p.classList.add("lit"); });
+  } else {
+    gates.forEach(function (g) { g.classList.remove("lit"); });
+    panels.forEach(function (p) { p.classList.remove("lit"); });
+    // I light a gate when its panel is near the middle of the screen, not when it first peeks in. That way the light means you are actually reading that stage.
+    var watcher = new IntersectionObserver(function (entries) {
+      entries.forEach(function (entry) {
+        if (!entry.isIntersecting) { return; }
+        var id = entry.target.id;
+        document.querySelectorAll('[data-gate="' + id + '"]').forEach(function (g) { g.classList.add("lit"); });
+        entry.target.classList.add("lit");
+      });
+    }, { rootMargin: "-35% 0px -45% 0px" });
+    panels.forEach(function (p) { watcher.observe(p); });
+    // The thin line on the rail fills as the page scrolls. It is progress through the passage, nothing more, so I keep it to a height change on scroll.
+    var onScroll = function () {
+      var max = document.documentElement.scrollHeight - window.innerHeight;
+      var pct = max > 0 ? (window.scrollY / max) * 100 : 100;
+      var track = document.querySelector(".track");
+      if (fill && track) { fill.style.height = (track.offsetHeight * pct / 100) + "px"; }
+    };
+    window.addEventListener("scroll", onScroll, { passive: true });
+    onScroll();
+  }
+</script>
 </body>
 </html>
