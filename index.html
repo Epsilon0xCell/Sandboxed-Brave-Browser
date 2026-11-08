@@ -3,51 +3,49 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Sandboxed-Brave-Browser: The Toll Keeper's Ledger</title>
-<meta name="description" content="sandbox.sh starts the Brave browser inside Firejail. If the sandbox cannot be provided, the browser does not start at all.">
+<title>Sandboxed-Brave-Browser: Inside the Glass</title>
+<meta name="description" content="One small shell script, sandbox.sh, that runs the Brave browser inside a Firejail sandbox instead of loose on the machine, and refuses to run it at all when the sandbox is missing.">
 <style>
-@font-face{font-family:'Anek Malayalam';src:url('fonts/AnekMalayalam.ttf') format('truetype');}
-@font-face{font-family:'Alegreya Sans';src:url('fonts/AlegreyaSans-Regular.ttf') format('truetype');}
-:root{--green:#1a3624;--gold:#d8a84a;--cream:#f0e8c8;--red:#b22c24;--ink:#22301f}
-*{box-sizing:border-box} body{margin:0;background:var(--green);color:var(--ink);font-family:'Alegreya Sans',sans-serif;line-height:1.65}
-h1,h2{font-family:'Anek Malayalam',sans-serif;color:var(--green)}
-.hero{padding:2rem 6vw 1rem;max-width:1000px;margin:0 auto;color:var(--cream)}.hero h1{color:var(--cream)}.hero img.banner{width:100%;height:auto}
-.logo{width:92px;height:92px}
-main{padding:0 6vw 3rem;max-width:1000px;margin:0 auto}
-.page{background:var(--cream);padding:1.2rem 1.5rem 1.2rem 1.8rem;margin:1.4rem 0;position:relative;border-left:4px solid #8a6d2f;background-image:repeating-linear-gradient(transparent,transparent 27px,rgba(26,54,36,.12) 28px);box-shadow:-8px 0 0 -2px #14301d}
-.pageno{position:absolute;top:10px;right:16px;color:#9a7a26;font-family:'Anek Malayalam',sans-serif}
-.ticket{display:inline-block;background:var(--cream);color:var(--green);font-family:'Anek Malayalam',sans-serif;text-decoration:none;padding:.55rem 1rem .55rem 1.6rem;border-top:4px solid var(--gold);border-right:1px solid #c9bc8e;border-bottom:1px solid #c9bc8e;border-left:14px dotted #b8a86e;margin:.3rem .3rem .3rem 0;position:relative}
-.ticket:hover{border-top-color:#eec25e;transform:translateY(-1px)}
-.ticket:active{background:#e2d6a8}
-.ticket:focus-visible{outline:2px dotted var(--gold);outline-offset:3px}
-a{color:var(--green)} a .key{display:inline-block;vertical-align:-2px;margin-right:.35em;transition:transform .2s}
-a:hover{text-decoration:underline dashed} a:hover .key{transform:rotate(45deg)}
-.hero a{color:var(--cream)} .ticket{color:var(--green)}
-pre{background:#fffdf0;padding:.9rem 1rem;overflow-x:auto;border:1px solid var(--gold);font-size:.92rem}
-.margin{background:#fffdf0;border:1px solid var(--gold);padding:.6rem .9rem;max-width:38rem}
-.refusal{border:2px solid var(--red);background:#fdf3e4;padding:.8rem 1rem;max-width:38rem}
-.refusal h3{color:var(--red);font-family:'Anek Malayalam',sans-serif;margin:.1rem 0 .4rem}
-.dots{text-align:center;margin:1.6rem 0}
-footer{padding:2rem 6vw;color:var(--cream)}
+@font-face{font-family:'Baloo 2';src:url('fonts/baloo-2-600.woff2') format('woff2');font-weight:600}
+@font-face{font-family:'Baloo 2';src:url('fonts/baloo-2-700.woff2') format('woff2');font-weight:700}
+@font-face{font-family:'Baloo 2';src:url('fonts/baloo-2-800.woff2') format('woff2');font-weight:800}
+@font-face{font-family:'Nunito Sans';src:url('fonts/nunito-sans-400.woff2') format('woff2');font-weight:400}
+@font-face{font-family:'Nunito Sans';src:url('fonts/nunito-sans-600.woff2') format('woff2');font-weight:600}
+@font-face{font-family:'Nunito Sans';src:url('fonts/nunito-sans-700.woff2') format('woff2');font-weight:700}
+:root{--soil:#15211a;--soil2:#1d2f24;--glass:#eef0dd;--sand:#e9dcba;--steel:#77808a;--fern:#57a773;--ink:#1c2a20}
+*{box-sizing:border-box} body{margin:0;background:var(--soil);color:var(--ink);font-family:'Nunito Sans',sans-serif;line-height:1.65}
+h1,h2{font-family:'Baloo 2',sans-serif}
+.hero{max-width:1060px;margin:0 auto;padding:2rem 5vw 0}.hero img.frame{width:100%;height:auto;display:block;border:5px solid var(--steel);outline:2px solid #090f0b}
+.hero .strip{display:flex;gap:1.2rem;align-items:flex-start;margin-top:1.2rem}.hero .strip img{width:96px;height:96px}
+.hero h1{color:var(--glass);margin:.2rem 0 .4rem;font-size:2.1rem}.hero p{color:#c9d4c2;max-width:46rem}
+.tank{max-width:1060px;margin:1.6rem auto 3rem;padding:2rem 5vw;background:var(--soil2)}
+.pane{position:relative;background:var(--glass);border:2px solid var(--steel);border-radius:14px;padding:1.1rem 1.4rem;margin:0 0 1.3rem;box-shadow:inset 0 0 0 4px rgba(119,128,138,.15)}
+.pane h2{margin:.1rem 0 .5rem;font-size:1.4rem}.pane p{margin:.4rem 0}.pane ul{margin:.4rem 0;padding-left:1.3rem}
+.bed{font-family:'Nunito Sans',sans-serif;text-transform:uppercase;letter-spacing:.14em;font-size:.72rem;font-weight:700;color:#2f7a4a;display:block}
+.btn{display:inline-block;background:var(--glass);color:var(--ink);font-family:'Baloo 2',sans-serif;font-weight:700;text-decoration:none;padding:.5rem 1.1rem;border:2px solid var(--steel);border-bottom:5px solid var(--fern);border-radius:10px;margin:.3rem .4rem .3rem 0}
+.btn:hover{transform:translateY(-2px)}.btn:active{transform:translateY(1px);border-bottom-color:var(--steel)}
+.btn:focus-visible{outline:2px solid var(--fern);outline-offset:3px}
+a{color:#2f7a4a;text-decoration:none}a:hover{text-decoration:underline}
+figure.closer{margin:.8rem 0}figure.closer img{width:100%;height:auto;display:block;border:4px solid var(--steel);border-radius:10px}
+figure.closer figcaption{font-size:.85rem;color:#43604c;margin-top:.35rem}
+code{background:#dde3c8;padding:.05rem .3rem;border-radius:4px}
+pre{background:var(--soil);color:var(--glass);padding:.8rem 1rem;overflow-x:auto;font-size:.88rem;border-radius:8px}
+footer{max-width:1060px;margin:0 auto;padding:0 5vw 2.5rem;color:#9db3a1}
 </style>
 </head>
 <body>
 <header class="hero">
-<img class="logo" src="assets/logo.png" alt="Toll bell hanging in a wooden frame, gold bell with a red clapper">
-<img class="banner" src="assets/banner.png" alt="Stone bridge at dusk: a troll with a ledger argues politely with a goat while the toll board carries the project name">
-<h1>Sandboxed-Brave-Browser</h1>
-<p>The toll keeper's ledger: a bound book of crossings, where each page settles one question a traveller would ask at the gate.</p>
-<p><a class="ticket" href="https://github.com/Epsilon0xCell/Sandboxed-Brave-Browser">Open the repo</a> <a class="ticket" href="#crossing">Make a crossing</a></p>
+<img class="frame" src="assets/banner.png" alt="A large glass terrarium with a steel frame on a wooden workbench, ferns and sand planted inside it, and a miniature desk with a glowing computer screen among the plants">
+<div class="strip"><img src="assets/logo.png" alt="A drawn round emblem of a glass terrarium, a green fern and rocks over soil inside the dome on a steel base, on a dark ground"><div><h1>Sandboxed-Brave-Browser</h1><p>The whole repository is one small shell script, <code>sandbox.sh</code>, and it does one thing: it runs the Brave browser inside <a href="https://firejail.wordpress.com/">Firejail</a>, a sandbox, instead of loose on your machine. Inside the glass, the browser lives in a private world of its own. Outside the glass, your real home directory is left alone. This page stays at the same scale: what the script checks, what it refuses, and how it hands over.</p><p><a class="btn" href="https://github.com/Epsilon0xCell/Sandboxed-Brave-Browser">Open the repo</a> <a class="btn" href="#run">Run it</a></p></div></div>
 </header>
-<main>
-<div class="dots"><svg width="210" height="18" viewBox="0 0 210 18"><g fill="#d8a84a"><circle cx="10" cy="9" r="4"/><circle cx="40" cy="9" r="4"/><circle cx="70" cy="9" r="4"/><circle cx="130" cy="9" r="4"/><circle cx="160" cy="9" r="4"/><circle cx="190" cy="9" r="4"/></g><polygon points="105,2 99,12 98,15 112,15 111,12" fill="#d8a84a"/></svg></div>
-<section class="page"><span class="pageno">Page 1</span><h2>What the gate does</h2><p>The repository holds one small shell script, <code>sandbox.sh</code>. It starts the Brave browser inside Firejail, so Brave runs with a private home view and the sandbox profile restrictions instead of the real home directory.</p><div class="refusal"><h3>The refusal</h3><p>If the sandbox cannot be provided, the browser does not start at all. A missing firejail is a broken promise, not a reason to launch Brave bare.</p></div></section>
-<section class="page"><span class="pageno">Page 2</span><h2>The two inspections</h2><p>First, firejail. The script looks for firejail on PATH. If it is absent it prints to stderr that firejail is not installed, warns that Brave would run unsandboxed, and exits with code 1.</p><div class="margin"><pre>error: firejail is not installed, so Brave would run unsandboxed. Install firejail first.</pre></div><p>Second, brave. If brave is not on PATH, the script prints that error and exits the same way, with code 1.</p><div class="margin"><pre>error: brave is not installed (or not on PATH).</pre></div><p>The order is the point of the page: firejail is checked before brave, because a missing sandbox is the failure that matters.</p></section>
-<div class="dots"><svg width="210" height="18" viewBox="0 0 210 18"><g fill="#d8a84a"><circle cx="10" cy="9" r="4"/><circle cx="40" cy="9" r="4"/><circle cx="70" cy="9" r="4"/><circle cx="130" cy="9" r="4"/><circle cx="160" cy="9" r="4"/><circle cx="190" cy="9" r="4"/></g><polygon points="105,2 99,12 98,15 112,15 111,12" fill="#d8a84a"/></svg></div>
-<section class="page" id="crossing"><span class="pageno">Page 3</span><h2>Making a crossing</h2><pre>./sandbox.sh
-./sandbox.sh https://example.com</pre><p>Run the script, followed by whatever you bring with you. Every argument is handed through untouched, quoted as <code>"$@"</code>, so a URL or a flag opens directly in the sandboxed browser, and an argument containing spaces stays a single argument.</p></section>
-<section class="page"><span class="pageno">Page 4</span><h2>Small print at the back of the ledger</h2><p>The script sets <code>set -u</code>, so an unset variable fails loudly in a future edit. It checks with <code>command -v</code>, because that searches PATH the same way the shell will. It finishes with <code>exec</code>, so the shell is replaced by firejail rather than lingering as a wrapper, which leaves Ctrl+C and the exit code belonging to the browser run itself.</p><p><a href="https://github.com/Epsilon0xCell/Sandboxed-Brave-Browser"><svg class="key" width="14" height="14" viewBox="0 0 14 14"><circle cx="4" cy="4" r="3" fill="none" stroke="#d8a84a" stroke-width="2"/><line x1="6" y1="6" x2="12" y2="12" stroke="#d8a84a" stroke-width="2"/><line x1="10" y1="10" x2="13" y2="10" stroke="#d8a84a" stroke-width="2"/></svg>Read sandbox.sh in the repo</a></p></section>
+<main class="tank">
+<section class="pane"><span class="bed">The planting</span><h2>A private world inside the glass</h2><p>Firejail gives the browser a private home view and the browser profile restrictions of its default sandbox profile. Brave never sees your real home folder; it sees the terrarium. Everything the browser saves, it saves inside that contained world, which is the point of planting it there.</p></section>
+<section class="pane"><span class="bed">The refusal</span><h2>No glass, no browser</h2><p>The script checks two things before it runs anything, and the order is deliberate: <strong>firejail first, brave second</strong>. If the sandbox is missing, launching the browser anyway would be the one outcome this repository exists to prevent, so the script stops and says exactly that:</p><pre>error: firejail is not installed, so Brave would run unsandboxed. Install firejail first.
+error: brave is not installed (or not on PATH).</pre><p>Both refusals go to standard error and the script exits with status 1. It never falls back to running Brave bare. A terrarium with no glass is not a terrarium with the lid off; it is not a terrarium at all.</p></section>
+<section class="pane" id="run"><span class="bed">Making a crossing</span><h2>One command, and your words pass through</h2><pre>./sandbox.sh
+./sandbox.sh https://example.com</pre><p>Any arguments you give are passed straight through to the browser, because the final line runs <code>exec firejail brave "$@"</code>: the quoted <code>"$@"</code> carries your URLs and flags across exactly as typed, and <code>exec</code> replaces the shell itself with the sandboxed browser. There is no wrapper process left behind, so Ctrl+C and the exit code you get back belong to the browser run, not to the script. Lookups are done with <code>command -v</code>, and <code>set -u</code> is on, so an unset variable stops the script rather than slipping through.</p></section>
+<section class="pane"><span class="bed">The closer look</span><h2>Condensation on the inside</h2><figure class="closer"><img src="assets/intro-banner.png" alt="A closer look through the terrarium glass, water beading on the inside of the pane, the miniature desk and its glowing screen lit among the ferns behind the droplets"><figcaption>Seen up close, the glass is doing its work: the weather stays inside, the room stays dry.</figcaption></figure><p>That is the honest picture of a sandbox. The browser inside can be as lively as it likes. The machine outside feels none of it.</p></section>
 </main>
-<footer><p>Sandboxed-Brave-Browser: nothing passes until the terms are checked, and a crossing made on agreed terms leaves the gate closed behind the traveller.</p></footer>
+<footer><p>Sandboxed-Brave-Browser: one script, one pane of glass, and a browser that lives its whole life indoors.</p></footer>
 </body>
 </html>
