@@ -1,8 +1,11 @@
-![Intro scenery: the bridge at dusk, bowl empty, bell unrung, a ring of toadstools at the bridge foot](intro-banner.png)
+![Intro: a closer look through the terrarium glass, water beading on the inside of the pane, the miniature desk and its glowing screen lit among the ferns behind the droplets](intro-banner.png)
+
 
 # Sandboxed-Brave-Browser
 
-![Wordmark banner: the toll board at the near end of the bridge carrying the project name, a troll and a goat mid negotiation](banner.png)
+<p align="center"><img src="logo.png" alt="Sandboxed-Brave-Browser logo: a drawn round emblem of a glass terrarium, a green fern and rocks over soil inside the dome on a steel base, on a dark ground" width="200"></p>
+
+![Banner: a large glass terrarium with a steel frame on a wooden workbench, ferns and sand planted inside it, and a miniature desk with a glowing computer screen among the plants](banner.png)
 
 ![Animated scene: the gorge in profile, lanterns flickering, the bell swaying, a goat crossing, the river sliding below](scene.svg)
 
